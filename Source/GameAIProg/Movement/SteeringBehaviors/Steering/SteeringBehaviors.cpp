@@ -9,7 +9,7 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput steering{};
 	steering.LinearVelocity = Target.Position - Agent.GetPosition();
-
+	steering.LinearVelocity.Normalize(); 
 	//add debug rendering for grades
 
 	return steering;
