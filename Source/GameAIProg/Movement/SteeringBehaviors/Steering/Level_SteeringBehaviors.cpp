@@ -223,14 +223,15 @@ void ALevel_SteeringBehaviors::SetAgentBehavior(ImGui_Agent& Agent)
 {
 	Agent.Behavior.reset();
 	
-	//commented this section to test
 
-	//switch (static_cast<BehaviorTypes>(Agent.SelectedBehavior))
-	//{
-	////TODO; Implement behaviors setting here
-	//default:
-	//	assert(false); // Incorrect Agent Behavior gotten during SetAgentBehavior()	
-	//}
+	switch (static_cast<BehaviorTypes>(Agent.SelectedBehavior))
+	{
+	case BehaviorTypes::Seek:
+		Agent.Behavior = std::make_unique<Seek>();
+		break;
+	default:
+		assert(false); // Incorrect Agent Behavior gotten during SetAgentBehavior()	
+	}
 
 	UpdateTarget(Agent);
 	
