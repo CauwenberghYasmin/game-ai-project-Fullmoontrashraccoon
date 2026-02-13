@@ -30,7 +30,11 @@ void ASteeringAgent::Tick(float DeltaTime)
 	{
 		SteeringOutput output = SteeringBehavior->CalculateSteering(DeltaTime, *this);
 		AddMovementInput(FVector{output.LinearVelocity, 0.f});
+		
+		//add angelar velocity somehow??
+		//AddActorLocalRotation(Frotator rotation(1));
 	}
+	
 }
 
 // Called to bind functionality to input
