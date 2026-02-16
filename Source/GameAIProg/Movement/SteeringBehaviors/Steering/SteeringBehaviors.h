@@ -98,8 +98,8 @@ public:
 	void SetMaxAngleChange(float rad){m_MaxAngleChange = rad; }
 	
 protected:
-	float m_OffsetDistance = 60.f;
+	float m_OffsetDistance = 120.f;
 	float m_Radius = 4.f;
-	float m_MaxAngleChange = 45; // = 45 degrees
-	float m_WanderAngle = 0.f;
+	float m_MaxAngleChange = 15; // = 45 degrees
+	float m_WanderAngle = 180.f;
 };
