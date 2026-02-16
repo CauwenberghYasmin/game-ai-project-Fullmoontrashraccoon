@@ -1,6 +1,7 @@
 #include "SteeringBehaviors.h"
 
 #include "CircleTypes.h"
+#include "CollisionDebugDrawingPublic.h"
 #include "BaseGizmos/GizmoMath.h"
 #include "GameAIProg/Movement/SteeringBehaviors/SteeringAgent.h"
 #include "Intersection/IntersectionUtil.h"
@@ -122,10 +123,58 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)		//fix this one!!
 {
 	SteeringOutput steering{};
-	FVector2d LinearVelocity =  Target.Position - Agent.GetPosition(); //goes towards target
-	steering.AngularVelocity =  Agent.GetAngularVelocity() * LinearVelocity.Normalize();
+	
+	FVector2d LinearVelocity =  (Target.Position - Agent.GetPosition()).GetSafeNormal(); //goes towards target
+	float AgentAngle{static_cast<float>(Agent.GetActorRotation().Yaw)/180.f * PI};
+	float targetAngle{static_cast<float>(atan2(LinearVelocity.Y, LinearVelocity.X)) };
+	float epsilon {PI/180.f};
+	
+	if (targetAngle > AgentAngle - epsilon &&  targetAngle< AgentAngle + epsilon)
+		steering.AngularVelocity = 0.f;
+	else if ((targetAngle - AgentAngle < PI && targetAngle - AgentAngle >0) || (targetAngle - AgentAngle < -PI && targetAngle - AgentAngle < 0))
+		steering.AngularVelocity = 1.f;
+	else
+		steering.AngularVelocity = -1.f;
 	
 	return steering;
 }
 
 
+SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)	//can't test yet, NO ONE TO PURSUIT 
+{
+	SteeringOutput steering{};
+	FVector2d vectorToTarget =  Target.Position - Agent.GetPosition(); //vector towards target
+	float timeFlight =  vectorToTarget.Length() / Agent.GetMaxLinearSpeed(); //time to reach target
+	
+	FVector2D distanceMade = Target.LinearVelocity * timeFlight; //pos where they will be
+	
+	steering.LinearVelocity = distanceMade - Agent.GetPosition(); //direction to that point
+	return steering;
+}
+
+SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)	
+{
+	SteeringOutput steering{};
+	FVector2d vectorToTarget =  Target.Position - Agent.GetPosition(); //vector towards target
+	float timeFlight =  vectorToTarget.Length() / Agent.GetMaxLinearSpeed(); //time to reach target
+	
+	FVector2D distanceMade = Target.LinearVelocity * timeFlight; //pos where they will be
+	
+	steering.LinearVelocity =  Agent.GetPosition() - distanceMade; //opposite direction
+	return steering;
+}
+
+
+SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)	
+{
+	SteeringOutput steering{};
+	float random = rand() % 90 + m_WanderAngle - m_MaxAngleChange; 
+	random = random / 180 * PI; //now in radian
+	FVector2D posCirlce = FVector2D{Agent.GetPosition().X * Agent.GetActorForwardVector().X * m_OffsetDistance, Agent.GetPosition().Y * Agent.GetActorForwardVector().Y * m_OffsetDistance};
+	UE::Geometry::FCircle2d WanderCIrlce (posCirlce, 300.f);
+	
+	//DrawLineTraces()
+	DrawDebugCircle(Agent.GetWorld(), FVector{posCirlce.X, posCirlce.Y, 5}, 300.f , 32, FColor::Blue, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
+	
+	return steering;
+}
