@@ -4,12 +4,27 @@
 #include "CollisionDebugDrawingPublic.h"
 #include "BaseGizmos/GizmoMath.h"
 #include "GameAIProg/Movement/SteeringBehaviors/SteeringAgent.h"
+#include "GeometryCollection/GeometryCollectionDebugDrawActor.h"
 #include "Intersection/IntersectionUtil.h"
 #include "WorldPartition/WorldPartitionHelpers.h"
 
 //SEEK
 //*******
 // TODO: Do the Week01 assignment :^)
+
+
+//draw debug stuff!!!
+void drawDebugLines(const SteeringOutput& steering, const ASteeringAgent& Agent)
+{
+	const FVector pos = FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 5.f);
+	FVector dir = FVector(steering.LinearVelocity.X, steering.LinearVelocity.Y, 0.f);
+	FVector scaledDir = dir.GetSafeNormal() * 100.f;
+	const FVector endPoint = pos + scaledDir;
+	
+	DrawDebugLine(Agent.GetWorld(), pos, pos + Agent.GetActorForwardVector() * 100.f , FColor::Red);
+	DrawDebugLine(Agent.GetWorld(), pos, endPoint , FColor::Black);
+}
+
 
 SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
@@ -23,19 +38,12 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		return FVector2D{0,0};
 	}
 	
-	//path?;
-	 const FVector pos = FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 5.f);
-	 FVector dir = FVector(steering.LinearVelocity.X, steering.LinearVelocity.Y, 1); //.Normalize();
-	const FVector desiredDIr = pos * (dir.Normalize() * 1.2f); //find a way so it has a const length 
-	
-	DrawDebugLine(Agent.GetWorld(), pos, desiredDIr , FColor::Black);
-	
-	
-	//desired path
-	//DrawDebugLine(Agent.GetWorld(), pos, desiredDIr , FColor::Black);
+	//path draw
+	drawDebugLines(steering, Agent);
 	
 	return steering;
  }
+
 
 
 SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
@@ -45,8 +53,9 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	const FVector pos = FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 5.f);
 	const FVector desiredDIr = pos + (FVector(steering.LinearVelocity.X, steering.LinearVelocity.Y, 1));
-	DrawDebugLine(Agent.GetWorld(), pos, desiredDIr , FColor::Black);
+	//DrawDebugLine(Agent.GetWorld(), pos, desiredDIr , FColor::Black);
 	
+	drawDebugLines(steering, Agent);
 	return steering;
 }
 
@@ -120,6 +129,9 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	if (isInside)
 		Agent.SetMaxLinearSpeed(0); //speed zero when inside target circle
 	
+	
+	drawDebugLines(steering, Agent);
+	
 	return steering;
 }
 
@@ -127,20 +139,28 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)		//f
 {
 	SteeringOutput steering{};
 	
-	// FVector2d LinearVelocity =  (Target.Position - Agent.GetPosition()).GetSafeNormal(); //goes towards target
-	// float AgentAngle{static_cast<float>(Agent.GetActorRotation().Yaw)/180.f * PI};
-	// float targetAngle{static_cast<float>(atan2(LinearVelocity.Y, LinearVelocity.X)) };
-	// float epsilon {PI/180.f};
-	//
-	// if (targetAngle > AgentAngle - epsilon &&  targetAngle< AgentAngle + epsilon)
-	// 	steering.AngularVelocity = 0.f;
-	// else if ((targetAngle - AgentAngle < PI && targetAngle - AgentAngle >0) || (targetAngle - AgentAngle < -PI && targetAngle - AgentAngle < 0))
-	// 	steering.AngularVelocity = 1.f;
-	// else
-	// 	steering.AngularVelocity = -1.f;
+	FVector2d LinearVelocity =  (Target.Position - Agent.GetPosition()).GetSafeNormal(); //goes towards target
+	float AgentAngle{static_cast<float>(Agent.GetActorRotation().Yaw)/180.f * PI};
+	float targetAngle{static_cast<float>(atan2(LinearVelocity.Y, LinearVelocity.X)) };
+	float epsilon {PI/180.f}; //buffer
 	
-	steering.LinearVelocity = Target.Position - Agent.GetPosition();
-	Agent.SetMaxLinearSpeed(0);
+	if (targetAngle > AgentAngle - epsilon &&  targetAngle< AgentAngle + epsilon)
+	{
+		steering.AngularVelocity = 0.f; //facing target
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "no angle diff");
+	}
+	else if ((targetAngle - AgentAngle < PI && targetAngle - AgentAngle >0) || (targetAngle - AgentAngle < -PI && targetAngle - AgentAngle < 0))
+	{
+		steering.AngularVelocity = 1.f;
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going 1");
+	}
+	else
+	{
+		steering.AngularVelocity = -1.f;
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going -1");
+	}
+	
+	
 	
 	return steering;
 }
@@ -159,8 +179,11 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)	/
 	FVector pos {Agent.GetPosition().X, Agent.GetPosition().Y, 1};
 	FVector dir {steering.LinearVelocity.X, steering.LinearVelocity.Y, 1};
 	
-	DrawDebugLine(Agent.GetWorld(), pos, dir , FColor::Black);
-	DrawDebugPoint(Agent.GetWorld(), FVector{distanceMade.X, distanceMade.Y, 2}, 7, FColor::Green);
+	//DrawDebugLine(Agent.GetWorld(), pos, dir , FColor::Black);
+	//DrawDebugPoint(Agent.GetWorld(), FVector{distanceMade.X, distanceMade.Y, 2}, 7, FColor::Green);
+	
+	drawDebugLines(steering, Agent);
+	
 	return steering;
 }
 
@@ -177,8 +200,11 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	FVector pos {Agent.GetPosition().X, Agent.GetPosition().Y, 1};
 	FVector dir {steering.LinearVelocity.X, steering.LinearVelocity.Y, 1};
 	
-	DrawDebugLine(Agent.GetWorld(), pos, dir , FColor::Black);
-	DrawDebugPoint(Agent.GetWorld(), FVector{distanceMade.X, distanceMade.Y, 2}, 7, FColor::Green);
+	//DrawDebugLine(Agent.GetWorld(), pos, dir , FColor::Black);
+	//DrawDebugPoint(Agent.GetWorld(), FVector{distanceMade.X, distanceMade.Y, 2}, 7, FColor::Green);
+	
+	drawDebugLines(steering, Agent);
+	
 	return steering;
 }
 
@@ -204,5 +230,8 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	
 	DrawDebugPoint(Agent.GetWorld(), FVector{targetPos.X, targetPos.Y, 1}, 7, FColor::Green);
 	steering.LinearVelocity = targetPos - Agent.GetPosition();
+	
+	drawDebugLines(steering, Agent);
+	
 	return steering;
 }
