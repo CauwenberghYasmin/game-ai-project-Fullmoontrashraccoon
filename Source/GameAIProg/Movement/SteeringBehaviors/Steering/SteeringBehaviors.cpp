@@ -147,17 +147,17 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)		//f
 	if (targetAngle > AgentAngle - epsilon &&  targetAngle< AgentAngle + epsilon)
 	{
 		steering.AngularVelocity = 0.f; //facing target
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "no angle diff");
+		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "no angle diff");
 	}
 	else if ((targetAngle - AgentAngle < PI && targetAngle - AgentAngle >0) || (targetAngle - AgentAngle < -PI && targetAngle - AgentAngle < 0))
 	{
 		steering.AngularVelocity = 1.f;
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going 1");
+		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going 1");
 	}
 	else
 	{
 		steering.AngularVelocity = -1.f;
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going -1");
+		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going -1");
 	}
 	
 	

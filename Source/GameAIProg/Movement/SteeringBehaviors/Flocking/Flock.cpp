@@ -17,9 +17,9 @@ Flock::Flock(
 	Agents.SetNum(FlockSize);
 
  // TODO: initialize the flock and the memory pool
-	const int MaxAmount{FlockSize};
+	//const int MaxAmount{FlockSize};
 	//ASteeringAgent m_pNeighbors [MaxAmount]{Agents}; //const array
-	int currentAmountInsidePool{0};
+	//int currentAmountInsidePool{0};
 	
 }
 
@@ -101,7 +101,7 @@ void Flock::RenderNeighborhood()
  // TODO: Debugrender the neighbors for the first agent in the flock
 }
 
-#ifndef 
+#ifndef GAMEAI_USE_SPACE_PARTITIONING 
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 {
 	for (auto& Agent : Agents )
