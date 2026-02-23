@@ -49,6 +49,8 @@ private:
 	UWorld* pWorld{nullptr};
 	
 	int FlockSize{0};
+	int currentAmountInsidePool{0};
+	std::vector<ASteeringAgent*> m_pNeighbors{};
 	TArray<ASteeringAgent*> Agents{};
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 	//std::unique_ptr<CellSpace> pPartitionedSpace{};

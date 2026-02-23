@@ -32,5 +32,11 @@ private:
 	bool UseMouseTarget = false;
 	bool CanDebugRender = false;
 
+	////make pointers ot behaviors, initialize with new
+	//others like blended and priority you initiliz ein begin play 
+	
+	BlendedSteering* pBlendedSteering{}; //TODO:: still initialize, see where to do what! 
+	
+	
 	
 };

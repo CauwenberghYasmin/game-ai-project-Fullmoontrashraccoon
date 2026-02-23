@@ -10,7 +10,7 @@
 
 //SEEK
 //*******
-// TODO: Do the Week01 assignment :^)
+
 
 
 //draw debug stuff!!!

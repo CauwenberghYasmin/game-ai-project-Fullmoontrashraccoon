@@ -17,18 +17,31 @@ Flock::Flock(
 	Agents.SetNum(FlockSize);
 
  // TODO: initialize the flock and the memory pool
-	//const int MaxAmount{FlockSize};
-	//ASteeringAgent m_pNeighbors [MaxAmount]{Agents}; //const array
-	//int currentAmountInsidePool{0};
+	const int MaxAmount{FlockSize -1}; //don't include yourself
+	m_pNeighbors.reserve(MaxAmount);
+	
+	for (int i = 0; i < FlockSize; ++i)
+	{
+		ASteeringAgent* Agent {nullptr};
+		bool spawnedSuccessfully{false};
+		
+		while (!spawnedSuccessfully)
+		{
+				
+			
+			
+		}
+		Agents.Add(Agent);
+	}
 	
 }
 
 Flock::~Flock()
 {
-	for ( auto& Agent : Agents )
-	{
-		delete Agent;
-	}
+	// for ( auto& Agent : Agents )
+	// {
+	// 	delete Agent;
+	// }
 }
 
 void Flock::Tick(float DeltaTime)
@@ -102,23 +115,31 @@ void Flock::RenderNeighborhood()
 }
 
 #ifndef GAMEAI_USE_SPACE_PARTITIONING 
-void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
+void Flock::RegisterNeighbors(ASteeringAgent* const pAgent) //pAgent is the main rn
 {
+	currentAmountInsidePool = 0; //reset
+	
 	for (auto& Agent : Agents )
 	{
 		if (Agent != pAgent) //not including itself
 		{
-			
+			FVector2D length = Agent->GetPosition() - pAgent->GetPosition();
+			if (length.Length() < NeighborhoodRadius)
+			{
+				m_pNeighbors[currentAmountInsidePool] = Agent; //puts it in the first empty space
+				++currentAmountInsidePool;
+			}
 		}
 	}
 }
+
 #endif
 
 FVector2D Flock::GetAverageNeighborPos() const
 {
 	FVector2D avgPosition = FVector2D::ZeroVector;
 
- // TODO: Implement
+	//for (const auto& Agent : m_pNeighbors)
 	
 	return avgPosition;
 }
