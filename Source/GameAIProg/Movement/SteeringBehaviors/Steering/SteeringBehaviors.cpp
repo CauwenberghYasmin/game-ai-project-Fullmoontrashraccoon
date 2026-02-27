@@ -52,7 +52,7 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	steering.LinearVelocity =  Agent.GetPosition() - Target.Position;
 
 	const FVector pos = FVector(Agent.GetPosition().X, Agent.GetPosition().Y, 5.f);
-	const FVector desiredDIr = pos + (FVector(steering.LinearVelocity.X, steering.LinearVelocity.Y, 1));
+	//const FVector desiredDIr = pos + (FVector(steering.LinearVelocity.X, steering.LinearVelocity.Y, 1));
 	//DrawDebugLine(Agent.GetWorld(), pos, desiredDIr , FColor::Black);
 	
 	drawDebugLines(steering, Agent);
@@ -83,7 +83,7 @@ float Arrive::calcPointInsideCircle (const FVector& pos1,const FVector& pos2, fl
 	{
 		return orginalSpeed; //keeps speed
 	}
-	//if distance smaller -> more slower
+	//if distance smaller -> slow
 	//we multiply so the kommagetal needs to get bigger
 }
 
@@ -137,31 +137,25 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)		//fix this one!!
 {
+	
 	SteeringOutput steering{};
 	
-	FVector2d LinearVelocity =  (Target.Position - Agent.GetPosition()).GetSafeNormal(); //goes towards target
-	float AgentAngle{static_cast<float>(Agent.GetActorRotation().Yaw)/180.f * PI};
-	float targetAngle{static_cast<float>(atan2(LinearVelocity.Y, LinearVelocity.X)) };
-	float epsilon {PI/180.f}; //buffer
+	FVector2d DirectionToTarget = (Target.Position - Agent.GetPosition()).GetSafeNormal();
+	float TargetAngle = FMath::Atan2(DirectionToTarget.Y, DirectionToTarget.X); //gives rad
+	float CurrentAngle = FMath::DegreesToRadians(Agent.GetActorRotation().Yaw);
 	
-	if (targetAngle > AgentAngle - epsilon &&  targetAngle< AgentAngle + epsilon)
+	float AngleDiff = FMath::FindDeltaAngleRadians(CurrentAngle, TargetAngle);
+	const float Epsilon = FMath::DegreesToRadians(1.f); //safety guard for no wiggling
+    
+	if (FMath::Abs(AngleDiff) < Epsilon)
 	{
-		steering.AngularVelocity = 0.f; //facing target
-		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "no angle diff");
-	}
-	else if ((targetAngle - AgentAngle < PI && targetAngle - AgentAngle >0) || (targetAngle - AgentAngle < -PI && targetAngle - AgentAngle < 0))
-	{
-		steering.AngularVelocity = 1.f;
-		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going 1");
+		steering.AngularVelocity = 0.f;
 	}
 	else
 	{
-		steering.AngularVelocity = -1.f;
-		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "going -1");
+		steering.AngularVelocity = (AngleDiff > 0.f) ? 1.f : -1.f;
 	}
-	
-	
-	
+    
 	return steering;
 }
 
@@ -197,13 +191,25 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	FVector2D distanceMade =Target.Position + Target.LinearVelocity * timeFlight; //pos where they will be
 	
 	steering.LinearVelocity = Agent.GetPosition() - distanceMade; //direction to that point
-	FVector pos {Agent.GetPosition().X, Agent.GetPosition().Y, 1};
-	FVector dir {steering.LinearVelocity.X, steering.LinearVelocity.Y, 1};
+	//FVector pos {Agent.GetPosition().X, Agent.GetPosition().Y, 1};
+	//FVector dir {steering.LinearVelocity.X, steering.LinearVelocity.Y, 1};
 	
 	//DrawDebugLine(Agent.GetWorld(), pos, dir , FColor::Black);
 	//DrawDebugPoint(Agent.GetWorld(), FVector{distanceMade.X, distanceMade.Y, 2}, 7, FColor::Green);
 	
+	const float radius {100.f};
+	if (vectorToTarget.Length() < radius)
+	{
+		steering.IsValid = true;
+		//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "EVADE"); -> works :D
+	}
+	else
+	{
+		steering.IsValid = false;
+	}
+	
 	drawDebugLines(steering, Agent);
+	
 	
 	return steering;
 }
@@ -212,21 +218,27 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)	
 {
 	SteeringOutput steering{};
-	float random = rand() % 90 + m_WanderAngle - m_MaxAngleChange; 
-	if (random < 0)
-		random = 360 + random;
-	else if (random > 360)
-		random = random - 360;
+	// float random = rand() % 90 + m_WanderAngle - m_MaxAngleChange; 
+	// if (random < 0)
+	// 	random = 360 + random;
+	// else if (random > 360)
+	// 	random = random - 360;
+	//
+	// m_WanderAngle = random;
+	// random = random / 180 * PI; //now in radian
 	
-	m_WanderAngle = random;
-	random = random / 180 * PI; //now in radian
+	float AngleChange = FMath::FRandRange(-m_MaxAngleChange, m_MaxAngleChange);
+	m_WanderAngle += AngleChange;
+	m_WanderAngle = FMath::UnwindDegrees(m_WanderAngle); //-> bless this function
+	float RadianAngle = FMath::DegreesToRadians(m_WanderAngle);
+	
 	
 	FVector2D posCirlce = FVector2D{Agent.GetPosition().X + (Agent.GetActorForwardVector().X * m_OffsetDistance), Agent.GetPosition().Y + (Agent.GetActorForwardVector().Y * m_OffsetDistance)};
 	UE::Geometry::FCircle2d WanderCIrlce (posCirlce, 100.f);
 	
 	//DrawLineTraces()
 	DrawDebugCircle(Agent.GetWorld(), FVector{posCirlce.X, posCirlce.Y, 5}, 100.f , 32, FColor::Blue, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
-	FVector2D targetPos {posCirlce.X + (WanderCIrlce.Radius * cos(random)), posCirlce.Y + (WanderCIrlce.Radius * sin(random)) };
+	FVector2D targetPos {posCirlce.X + (WanderCIrlce.Radius * cos(RadianAngle)), posCirlce.Y + (WanderCIrlce.Radius * sin(RadianAngle)) };
 	
 	DrawDebugPoint(Agent.GetWorld(), FVector{targetPos.X, targetPos.Y, 1}, 7, FColor::Green);
 	steering.LinearVelocity = targetPos - Agent.GetPosition();

@@ -32,11 +32,18 @@ private:
 	bool UseMouseTarget = false;
 	bool CanDebugRender = false;
 
-	////make pointers ot behaviors, initialize with new
-	//others like blended and priority you initiliz ein begin play 
 	
-	BlendedSteering* pBlendedSteering{}; //TODO:: still initialize, see where to do what! 
+	//steeringss
+	ISteeringBehavior* m_pEvadeBehavior{ new Evade() };
+	ISteeringBehavior* m_pWanderBehavior{ new Wander() };
+	ISteeringBehavior* m_pSeekBehavior{ new Seek() };
+	
+	//special steerings
+	BlendedSteering* m_pBlendedSteering{ nullptr };
+	PrioritySteering* m_pPrioritySteering{ nullptr };
 	
 	
-	
+	//pretyy agents
+	ASteeringAgent* m_pBlendedAgent{ nullptr };
+	ASteeringAgent* m_pPriorityAgent{ nullptr };
 };

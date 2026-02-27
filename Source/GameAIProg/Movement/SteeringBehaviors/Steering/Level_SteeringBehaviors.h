@@ -64,8 +64,4 @@ private:
 	void UpdateTarget(ImGui_Agent& Agent);
 	void RefreshAgentTargets(unsigned int IndexRemoved);
 	
-	
-	
-	
-	
 };
