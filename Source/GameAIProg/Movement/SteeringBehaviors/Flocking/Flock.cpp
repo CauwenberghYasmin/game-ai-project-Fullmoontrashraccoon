@@ -123,11 +123,15 @@ void Flock::RegisterNeighbors(ASteeringAgent* const pAgent) //pAgent is the main
 	{
 		if (Agent != pAgent) //not including itself
 		{
+			Agent->SetInUse(false); //TODO:: check these again with the theory!!
+			
 			FVector2D length = Agent->GetPosition() - pAgent->GetPosition();
 			if (length.Length() < NeighborhoodRadius)
 			{
 				m_pNeighbors[currentAmountInsidePool] = Agent; //puts it in the first empty space
 				++currentAmountInsidePool;
+				
+				Agent->SetInUse(true); //TODO:: check these again with memory pool 
 			}
 		}
 	}
@@ -139,7 +143,11 @@ FVector2D Flock::GetAverageNeighborPos() const
 {
 	FVector2D avgPosition = FVector2D::ZeroVector;
 
-	//for (const auto& Agent : m_pNeighbors)
+	for (const auto& Agent : m_pNeighbors)
+	{
+		avgPosition += Agent->GetPosition();
+	}
+	avgPosition /= currentAmountInsidePool;
 	
 	return avgPosition;
 }
@@ -148,10 +156,14 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 {
 	FVector2D avgVelocity = FVector2D::ZeroVector;
 
- // TODO: Implement
+	for (const auto& Agent : m_pNeighbors)
+	{
+		avgVelocity += FVector2D {Agent->GetVelocity().X, Agent->GetVelocity().Y};
+	}
 
 	return avgVelocity;
 }
+
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {

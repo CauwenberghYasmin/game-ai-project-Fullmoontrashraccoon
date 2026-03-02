@@ -61,6 +61,8 @@ protected:
 
 	// Called when the object is being destroyed
 	virtual void BeginDestroy() override;
+	
+	bool isInUse;
 
 public:
 	// Called every frame
@@ -70,4 +72,14 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void SetSteeringBehavior(ISteeringBehavior* NewSteeringBehavior);
+	
+	void SetInUse( bool inUse)
+	{
+		isInUse = inUse;
+	}
+	
+	bool GetInUse()
+	{
+		return isInUse;
+	}
 };

@@ -25,6 +25,9 @@ public:
 	bool bTrimWorld = false);
 
 	~Flock();
+	
+	int currentAmountInsidePool{0};
+	std::vector<ASteeringAgent*> m_pNeighbors{}; //added a function to baseclass: get/set inUse
 
 	void Tick(float DeltaTime);
 	void RenderDebug();
@@ -49,8 +52,6 @@ private:
 	UWorld* pWorld{nullptr};
 	
 	int FlockSize{0};
-	int currentAmountInsidePool{0};
-	std::vector<ASteeringAgent*> m_pNeighbors{};
 	TArray<ASteeringAgent*> Agents{};
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 	//std::unique_ptr<CellSpace> pPartitionedSpace{};
@@ -65,7 +66,7 @@ private:
 
 	ASteeringAgent* pAgentToEvade{nullptr};
 	
-	//Steering Behaviors
+	//Steering Behaviors //->????
 	//std::unique_ptr<Separation> pSeparationBehavior{};
 	//std::unique_ptr<Cohesion> pCohesionBehavior{};
 	//std::unique_ptr<VelocityMatch> pVelMatchBehavior{};

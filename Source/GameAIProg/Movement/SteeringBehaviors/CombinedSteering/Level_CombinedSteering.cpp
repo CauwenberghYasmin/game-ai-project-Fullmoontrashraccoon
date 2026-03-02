@@ -32,7 +32,14 @@ void ALevel_CombinedSteering::BeginPlay()
 void ALevel_CombinedSteering::BeginDestroy()
 {
 	Super::BeginDestroy();
-
+	
+	delete m_pBlendedSteering;
+	delete m_pPrioritySteering;
+	delete m_pBlendedAgent;
+	delete m_pPriorityAgent;
+	delete m_pSeekBehavior;
+	delete m_pWanderBehavior;
+	delete m_pEvadeBehavior;
 }
 
 // Called every frame
