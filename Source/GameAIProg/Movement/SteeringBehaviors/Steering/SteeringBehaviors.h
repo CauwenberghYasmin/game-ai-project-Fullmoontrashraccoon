@@ -51,11 +51,16 @@ class Arrive : public ISteeringBehavior
 public:
 	Arrive() = default;
 	virtual ~Arrive() override = default;
-	bool firstTimeRuning = false;
-	float orginalSpeed;
-
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 	float calcPointInsideCircle (const FVector& pos1, const FVector& pos2, float radius, float speed);
+	void SetTargetRadius(float radius);
+	
+	
+protected:
+	bool firstTimeRuning = false;
+	float orginalSpeed;
+	float  targetRadiusArrive = 300.f;
+
 };
 
 class Face : public ISteeringBehavior

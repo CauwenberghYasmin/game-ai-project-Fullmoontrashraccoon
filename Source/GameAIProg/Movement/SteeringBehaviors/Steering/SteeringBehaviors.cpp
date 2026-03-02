@@ -97,6 +97,10 @@ bool IsPointInCircle (const FVector& pos1, const FVector& pos2, float radius)
 		return false;
 }
 //--------------------------------------------------------------------------------------------------------------------
+void Arrive::SetTargetRadius(float radius)
+{
+	targetRadiusArrive = radius;
+}
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	if (!firstTimeRuning)	//get original speed
@@ -114,11 +118,11 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		return FVector2D{0,0};
 	}
 	
-	UE::Geometry::FCircle2d slowRadius (Target.Position, 300.f);
-	UE::Geometry::FCircle2d targetRadius (Target.Position, 100.f);
+	UE::Geometry::FCircle2d targetRadius (Target.Position, targetRadiusArrive);
+	UE::Geometry::FCircle2d slowRadius (Target.Position, (targetRadiusArrive + 200.f));
 	
-	DrawDebugCircle(Agent.GetWorld(), FVector{Agent.GetPosition().X, Agent.GetPosition().Y, 5}, 300.f , 32, FColor::Blue, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
-	DrawDebugCircle(Agent.GetWorld(), FVector{Agent.GetPosition().X, Agent.GetPosition().Y, 5}, 100.f , 32, FColor::Red, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
+	DrawDebugCircle(Agent.GetWorld(), FVector{Agent.GetPosition().X, Agent.GetPosition().Y, 5}, slowRadius.Radius , 32, FColor::Blue, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
+	DrawDebugCircle(Agent.GetWorld(), FVector{Agent.GetPosition().X, Agent.GetPosition().Y, 5}, targetRadius.Radius , 32, FColor::Red, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
 	
 	float currentSpeed = Agent.GetMaxLinearSpeed();
 
