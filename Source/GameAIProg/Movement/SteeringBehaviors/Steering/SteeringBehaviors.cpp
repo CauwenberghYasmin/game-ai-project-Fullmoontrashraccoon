@@ -201,7 +201,7 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	//DrawDebugLine(Agent.GetWorld(), pos, dir , FColor::Black);
 	//DrawDebugPoint(Agent.GetWorld(), FVector{distanceMade.X, distanceMade.Y, 2}, 7, FColor::Green);
 	
-	const float radius {100.f};
+	const float radius {400.f};
 	if (vectorToTarget.Length() < radius)
 	{
 		steering.IsValid = true;

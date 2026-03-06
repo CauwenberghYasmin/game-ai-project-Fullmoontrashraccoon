@@ -7,7 +7,6 @@
 // Sets default values
 ALevel_Flocking::ALevel_Flocking()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -28,6 +27,14 @@ void ALevel_Flocking::BeginPlay()
 			pAgentToEvade,
 			true)
 			);
+	
+	ImGui::Checkbox("Trim World", &TrimWorld->bShouldTrimWorld);
+	if (TrimWorld->bShouldTrimWorld)
+	{
+		ImGuiHelpers::ImGuiSliderFloatWithSetter("Trim Size",
+			TrimWorld->GetTrimWorldSize(), 1000.f, 3000.f,
+			[this](float InVal) { TrimWorld->SetTrimWorldSize(InVal); });
+	}
 }
 
 // Called every frame

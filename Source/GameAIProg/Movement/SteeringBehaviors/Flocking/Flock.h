@@ -32,6 +32,7 @@ public:
 	void Tick(float DeltaTime);
 	void RenderDebug();
 	void ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize);
+	void WorldTrimming(ASteeringAgent* Agent);
 
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 	//const TArray<ASteeringAgent*>& GetNeighbors() const { return pPartitionedSpace->GetNeighbors(); }
@@ -47,6 +48,7 @@ public:
 
 	void SetTarget_Seek(FSteeringParams const & Target);
 
+	
 private:
 	// For debug rendering purposes
 	UWorld* pWorld{nullptr};
@@ -63,19 +65,20 @@ private:
 	
 	float NeighborhoodRadius{200.f};
 	int NrOfNeighbors{0};
-
-	ASteeringAgent* pAgentToEvade{nullptr};
+	float m_WorldSize{};
 	
-	//Steering Behaviors //->????
-	//std::unique_ptr<Separation> pSeparationBehavior{};
-	//std::unique_ptr<Cohesion> pCohesionBehavior{};
-	//std::unique_ptr<VelocityMatch> pVelMatchBehavior{};
-	//std::unique_ptr<Seek> pSeekBehavior{};
-	//std::unique_ptr<Wander> pWanderBehavior{};
-	//std::unique_ptr<Evade> pEvadeBehavior{};
+	ASteeringAgent* m_pAgentToEvade{nullptr};
+	BlendedSteering* m_pBlendedSteering{ nullptr };
+	PrioritySteering* m_pPrioritySteering{ nullptr };
 	
-	std::unique_ptr<BlendedSteering> pBlendedSteering{};
-	std::unique_ptr<PrioritySteering> pPrioritySteering{};
+	//initialize in beginPLay
+	ISteeringBehavior* m_pCohesionBehavior{};
+	ISteeringBehavior* m_pSeperationBehavior{};
+	ISteeringBehavior* m_pAlignmentBehavior{};
+	ISteeringBehavior* m_pSeekBehavior{ new Seek() };
+	ISteeringBehavior* m_pWanderBehavior{ new Wander() };
+	ISteeringBehavior* m_pEvadeBehavior{ new Evade() };
+	
 
 	// UI and rendering
 	bool DebugRenderSteering{false};

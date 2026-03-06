@@ -16,23 +16,20 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 
 //*********************
 //SEPARATION (FLOCKING)
-SteeringOutput Seperation::CalculateSteering(float deltaT, ASteeringAgent& pAgent) //need to initialize flock somewhere
+SteeringOutput Seperation::CalculateSteering(float deltaT, ASteeringAgent& pAgent) //Todo:: change code (see teacher feedback on onenote!!)
 {
 	SteeringOutput steering{};
-	double  smallestDistance{0.f}; //when comparing take abs !!!
-	FVector2D closestPosition {};
-	
-	for (const auto& neighbor: pFlock->m_pNeighbors)
+	for (const auto& neighbor : pFlock->m_pNeighbors)
 	{
-		double distance {(neighbor->GetPosition() - pAgent.GetPosition()).SquaredLength()}; //don't need exact length :D
-		if (std::abs(distance) < smallestDistance)//if distance smaller than smallest distance
+		FVector2D separationVector = pAgent.GetPosition() - neighbor->GetPosition();
+		double distance = abs(separationVector.SquaredLength()); //not sure if with abs, it returns a pos number
+		
+		if (distance > 0.01f)
 		{
-			smallestDistance = distance;
-			closestPosition = neighbor->GetPosition();
-		}	//TODO:: change this: needs to have an endresult which adds all of the previous which are changed by the weight (closest)
+			steering.LinearVelocity += separationVector / distance;
+		}
 	}
 	
-	steering.LinearVelocity = pAgent.GetPosition() - closestPosition; //opposite!
 	return steering;
 }
 
