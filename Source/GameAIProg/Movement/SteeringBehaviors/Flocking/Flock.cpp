@@ -2,20 +2,23 @@
 #include "FlockingSteeringBehaviors.h"
 #include "Movement/SteeringBehaviors/CombinedSteering/Level_CombinedSteering.h"
 #include "Shared/ImGuiHelpers.h"
-
+#include "Movement/SteeringBehaviors/SpacePartitioning/SpacePartitioning.h"
 
 Flock::Flock(
-	UWorld* pWorld,
+	UWorld* pworld,
 	TSubclassOf<ASteeringAgent> AgentClass,
 	int FlockSize,
 	float WorldSize,
 	ASteeringAgent* const pAgentToEvade,
 	bool bTrimWorld)
-	: pWorld{pWorld}
+	: pWorld{pworld}
 	, FlockSize{ FlockSize }
 	, m_WorldSize{ WorldSize }
 	, m_pAgentToEvade{pAgentToEvade}
 {
+	float activeWorldSize { m_WorldSize / 3.0f * 2 };
+	pCellSpace = std::make_unique<CellSpace>(pWorld, activeWorldSize, activeWorldSize, 10, 10, FlockSize);
+	
 	Agents.SetNum(FlockSize);
 	
  // TODO: initialize the flock and the memory pool
@@ -45,12 +48,15 @@ Flock::Flock(
 		}
 		
 		Agents[i]->SetSteeringBehavior(m_pPrioritySteering);
+		pCellSpace->AddAgent(*Agents[i]);
 	
 	}
 	
 	FVector SpawnLocation = FVector(FMath::RandRange(-WorldSize/2, WorldSize/2), FMath::RandRange(-WorldSize/2, WorldSize/2), 90.f);
 	m_pAgentToEvade = pWorld->SpawnActor<ASteeringAgent>(AgentClass, SpawnLocation, FRotator::ZeroRotator);
 	m_pAgentToEvade->SetSteeringBehavior(m_pWanderBehavior); //just wanders around, the rest has to avoid it
+	
+	canStartTicking = true; //only once done
 }
 
 Flock::~Flock()
@@ -66,11 +72,7 @@ Flock::~Flock()
 
 void Flock::Tick(float DeltaTime)
 {
-  // TODO: update the flock
-  // TODO: for every agent:
-  // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
-  // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
-  // TODO: trim the agent to the world
+	if (!canStartTicking) return; //only tick when done constructor
 	
 	for (auto& agent : Agents )
 	{
@@ -98,6 +100,7 @@ void Flock::Tick(float DeltaTime)
 
 void Flock::WorldTrimming(ASteeringAgent* Agent)
 {
+	// so the active is m_WorldSize / 3.0f * 2 -> need for spactial partitioning
 	float HalfSize = m_WorldSize / 3.0f;
 	FVector CurrentPos = Agent->GetActorLocation();
 	bool bNeedsTeleport = false;
@@ -174,6 +177,20 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 		ImGui::Spacing();
 		ImGui::Separator();
 		ImGui::Spacing();
+		
+		ImGui::Checkbox("spatial partitioning", &isUsingSpacialPartitions);
+		{
+			//isUsingSpacialPartitions = !isUsingSpacialPartitions;
+		}
+		
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+		
+		
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
 
 		ImGui::Text("Flocking");
 		ImGui::Spacing();
@@ -210,10 +227,11 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 
 void Flock::RenderNeighborhood()
 {
-	
+	if (isUsingSpacialPartitions)
+		pCellSpace->RenderCells();
 }
 
-#ifndef GAMEAI_USE_SPACE_PARTITIONING 
+
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent) //pAgent is the main rn
 {
 	currentAmountInsidePool = 0; //reset
@@ -236,7 +254,7 @@ void Flock::RegisterNeighbors(ASteeringAgent* const pAgent) //pAgent is the main
 	}
 }
 
-#endif
+
 
 FVector2D Flock::GetAverageNeighborPos() const
 {
@@ -273,3 +291,26 @@ void Flock::SetTarget_Seek(FSteeringParams const& Target)
 	 m_pSeekBehavior->SetTarget(Target);
 }
 
+
+int Flock::GetNrOfNeighbors() const
+{
+	if (!isUsingSpacialPartitions)
+		return NrOfNeighbors;
+	else 
+	{
+		return pPartitionedSpace->GetNrOfNeighbors();
+	}
+}
+
+const TArray<ASteeringAgent*>& Flock::GetNeighbors() const
+{
+	if (!isUsingSpacialPartitions)
+		return Neighbors;
+	else
+	{
+		return pPartitionedSpace->GetNeighbors();
+	}
+}
+
+//const TArray<ASteeringAgent*>& GetNeighborsPartitioning() const { return pPartitionedSpace->GetNeighbors(); }
+//int GetNrOfNeighborsPartitioning() const { return pPartitionedSpace->GetNrOfNeighbors(); }

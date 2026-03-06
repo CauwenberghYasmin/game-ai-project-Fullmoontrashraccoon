@@ -29,7 +29,7 @@ struct Cell final
 
 // --- Partitioned Space ---
 // -------------------------
-class CellSpace final
+class CellSpace final //handels partitioning 
 {
 public:
 	CellSpace(UWorld* pWorld, float Width, float Height, int Rows, int Cols, int MaxEntities);
@@ -37,7 +37,7 @@ public:
 	void AddAgent(ASteeringAgent& Agent);
 	void UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos);
 
-	void RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius);
+	void RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius); 
 	const TArray<ASteeringAgent*>& GetNeighbors() const { return Neighbors; }
 	int GetNrOfNeighbors() const { return NrOfNeighbors; }
 
@@ -61,7 +61,7 @@ private:
 
 	float CellWidth;
 	float CellHeight;
-
+	
 	// Members to avoid memory allocation on every frame
 	TArray<ASteeringAgent*> Neighbors;
 	int NrOfNeighbors;

@@ -9,15 +9,13 @@
 #include "Movement/SteeringBehaviors/CombinedSteering/CombinedSteeringBehaviors.h"
 #include <memory>
 #include "imgui.h"
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
-#include "../SpacePartitioning/SpacePartitioning.h"
-#endif
 
+class CellSpace;
 class Flock final
 {
 public:
 	Flock(
-	UWorld* pWorld,
+	UWorld* pworld, 
 	TSubclassOf<ASteeringAgent> AgentClass,
 	int FlockSize = 10, 
 	float WorldSize = 100.f, 
@@ -34,14 +32,18 @@ public:
 	void ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize);
 	void WorldTrimming(ASteeringAgent* Agent);
 
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
-	//const TArray<ASteeringAgent*>& GetNeighbors() const { return pPartitionedSpace->GetNeighbors(); }
-	//int GetNrOfNeighbors() const { return pPartitionedSpace->GetNrOfNeighbors(); }
-#else // No space partitioning
+//#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	//const TArray<ASteeringAgent*>& GetNeighborsPartitioning() const { return pPartitionedSpace->GetNeighbors(); }
+	//int GetNrOfNeighborsPartitioning() const { return pPartitionedSpace->GetNrOfNeighbors(); }
+	//-> move to cpp, give right amswer back depending in enabled
+	
+//#else // No space partitioning
 	void RegisterNeighbors(ASteeringAgent* const Agent);
-	int GetNrOfNeighbors() const { return NrOfNeighbors; }
-	const TArray<ASteeringAgent*>& GetNeighbors() const { return Neighbors; }
-#endif // USE_SPACE_PARTITIONING
+	
+	//will have double version
+	int GetNrOfNeighbors() const;
+	const TArray<ASteeringAgent*>& GetNeighbors() const;
+//#endif // USE_SPACE_PARTITIONING
 
 	FVector2D GetAverageNeighborPos() const;
 	FVector2D GetAverageNeighborVelocity() const;
@@ -55,18 +57,22 @@ private:
 	
 	int FlockSize{0};
 	TArray<ASteeringAgent*> Agents{};
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
-	//std::unique_ptr<CellSpace> pPartitionedSpace{};
-	//int NrOfCellsX{ 10 };
-	//TArray<FVector2D> OldPositions{};
-#else // No space partitioning
-	TArray<ASteeringAgent*> Neighbors{};
-#endif // USE_SPACE_PARTITIONING
+//#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	std::unique_ptr<CellSpace> pPartitionedSpace{};
+	int NrOfCellsX{ 10 };
+	TArray<FVector2D> OldPositions{};
+	
+//#else // No space partitioning
+	TArray<ASteeringAgent*> Neighbors{};	//partitioning class has own neighbours vector
+//#endif // USE_SPACE_PARTITIONING
 	
 	float NeighborhoodRadius{200.f};
 	int NrOfNeighbors{0};
 	float m_WorldSize{};
+	bool isUsingSpacialPartitions{true};
+	bool canStartTicking{false};
 	
+	std::unique_ptr<CellSpace> pCellSpace{}; 
 	ASteeringAgent* m_pAgentToEvade{nullptr};
 	BlendedSteering* m_pBlendedSteering{ nullptr };
 	PrioritySteering* m_pPrioritySteering{ nullptr };
@@ -84,6 +90,7 @@ private:
 	bool DebugRenderSteering{false};
 	bool DebugRenderNeighborhood{true};
 	bool DebugRenderPartitions{true};
-
+	
+	
 	void RenderNeighborhood();
 };
