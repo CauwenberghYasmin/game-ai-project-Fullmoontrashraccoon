@@ -38,7 +38,7 @@ public:
 	void UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos);
 
 	void RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius); 
-	const TArray<ASteeringAgent*>& GetNeighbors() const { return Neighbors; }
+	std::vector<ASteeringAgent*> GetNeighbors() const { return Neighbors; }
 	int GetNrOfNeighbors() const { return NrOfNeighbors; }
 
 	//empties the cells of entities
@@ -63,7 +63,7 @@ private:
 	float CellHeight;
 	
 	// Members to avoid memory allocation on every frame
-	TArray<ASteeringAgent*> Neighbors;
+	std::vector<ASteeringAgent*> Neighbors;
 	int NrOfNeighbors;
 
 	// Helper functions

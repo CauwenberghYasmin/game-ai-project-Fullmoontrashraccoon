@@ -42,7 +42,7 @@ public:
 	
 	//will have double version
 	int GetNrOfNeighbors() const;
-	const TArray<ASteeringAgent*>& GetNeighbors() const;
+	std::vector<ASteeringAgent*> GetNeighbors() const;
 //#endif // USE_SPACE_PARTITIONING
 
 	FVector2D GetAverageNeighborPos() const;
@@ -71,6 +71,7 @@ private:
 	float m_WorldSize{};
 	bool isUsingSpacialPartitions{true};
 	bool canStartTicking{false};
+	std::vector<FVector2D> oldPosAgents;
 	
 	std::unique_ptr<CellSpace> pCellSpace{}; 
 	ASteeringAgent* m_pAgentToEvade{nullptr};
@@ -84,7 +85,7 @@ private:
 	ISteeringBehavior* m_pSeekBehavior{ new Seek() };
 	ISteeringBehavior* m_pWanderBehavior{ new Wander() };
 	ISteeringBehavior* m_pEvadeBehavior{ new Evade() };
-	
+	//make sure to delete!!!
 
 	// UI and rendering
 	bool DebugRenderSteering{false};

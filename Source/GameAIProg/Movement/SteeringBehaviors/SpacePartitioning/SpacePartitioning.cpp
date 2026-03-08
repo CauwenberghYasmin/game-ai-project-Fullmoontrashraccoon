@@ -36,8 +36,7 @@ CellSpace::CellSpace(UWorld* pWorld, float Width, float Height, int Rows, int Co
 	, NrOfCols{Cols}
 	, NrOfNeighbors{0}
 {
-	Neighbors.SetNum(MaxEntities);
-	
+	Neighbors.resize(MaxEntities);
 	//calculate bounds of a cell
 	CellWidth = Width / Cols;
 	CellHeight = Height / Rows;
@@ -63,7 +62,7 @@ void CellSpace::AddAgent(ASteeringAgent& Agent)
 	Cells[index].Agents.push_back(&Agent);
 }
 
-void CellSpace::UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos)
+void CellSpace::UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos) //something goes wrong here, but idk how to fix it
 {
 	int oldIndex = PositionToIndex(OldPos);
 	int newIndex = PositionToIndex(Agent.GetPosition());
@@ -72,11 +71,11 @@ void CellSpace::UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos)
 	{
 		// Remove from old cell
 		auto& oldAgents = Cells[oldIndex].Agents;
-		oldAgents.erase(std::remove(oldAgents.begin(), oldAgents.end(), &Agent), oldAgents.end()); //see childObject algo in prog4!!
+		oldAgents.erase(std::remove(oldAgents.begin(), oldAgents.end(), &Agent), oldAgents.end()); //see childObject in prog4!!
 
 		// Add to new cell
 		Cells[newIndex].Agents.emplace_back(&Agent);
-	}
+	} //some old agents don't get deleted!
 }
 
 void CellSpace::RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius) //query = question or demand!
@@ -121,8 +120,8 @@ void CellSpace::RenderCells() const
 {
 	for (const Cell& cell : Cells)
 	{
-		FVector min(cell.BoundingBox.Min.X, cell.BoundingBox.Min.Y, 90.f);
-		FVector max(cell.BoundingBox.Max.X, cell.BoundingBox.Max.Y, 90.f);
+		FVector min(cell.BoundingBox.Min.X, cell.BoundingBox.Min.Y, 95.f);
+		FVector max(cell.BoundingBox.Max.X, cell.BoundingBox.Max.Y, 95.f);
 		DrawDebugBox(pWorld, (min + max) * 0.5f, (max - min) * 0.5f, FColor::Blue, false, -1.f, 0, 2.f);
 		
 		//text
@@ -130,7 +129,7 @@ void CellSpace::RenderCells() const
 		DrawDebugString(pWorld, textPos, FString::FromInt(cell.Agents.size()), nullptr, FColor::White, 0.f, true, 1.5f);
 	}
 	
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "draw getting called");
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 3.F, FColor{255, 0,0,255}, "draw getting called");
 }
 
 int CellSpace::PositionToIndex(FVector2D const & Pos) const

@@ -25,6 +25,7 @@ Flock::Flock(
 	const int MaxAmount {FlockSize - 1}; //don't include yourself
 	m_pNeighbors.reserve(MaxAmount);
 	Agents.Reserve(FlockSize);
+	oldPosAgents.resize(FlockSize, FVector2D::ZeroVector);
 	
 	m_pCohesionBehavior = new Cohesion(this) ;
 	m_pSeperationBehavior = new Seperation(this) ;
@@ -74,19 +75,21 @@ void Flock::Tick(float DeltaTime)
 {
 	if (!canStartTicking) return; //only tick when done constructor
 	
-	for (auto& agent : Agents )
+	for ( int i {0}; i < FlockSize; ++i)
 	{
-		RegisterNeighbors(agent);
-		WorldTrimming(agent);
+		WorldTrimming(Agents[i]);
 		
+		m_pSeperationBehavior->CalculateSteering(DeltaTime, *Agents[i]);
+		m_pCohesionBehavior->CalculateSteering(DeltaTime, *Agents[i]);
+		m_pAlignmentBehavior->CalculateSteering(DeltaTime, *Agents[i]);
 		
-		m_pSeperationBehavior->CalculateSteering(DeltaTime, *agent);
-		m_pCohesionBehavior->CalculateSteering(DeltaTime, *agent);
-		m_pAlignmentBehavior->CalculateSteering(DeltaTime, *agent);
-		
+		if (isUsingSpacialPartitions)
+		{
+			pCellSpace->UpdateAgentCell(*Agents[i], oldPosAgents[i]);
+		}
+		RegisterNeighbors(Agents[i]);
 	}
 	
-	WorldTrimming(m_pAgentToEvade);
 	
 	//update the evade target aswell (priority steering)
 	FTargetData evadeTarget;
@@ -96,6 +99,12 @@ void Flock::Tick(float DeltaTime)
 	evadeTarget.LinearVelocity = m_pAgentToEvade->GetLinearVelocity();
 	
 	m_pEvadeBehavior->SetTarget(evadeTarget);
+	
+	for ( int i {0}; i < FlockSize; ++i) //saves old pos
+	{
+		oldPosAgents[i] = Agents[i]->GetPosition();
+	}
+	WorldTrimming(m_pAgentToEvade);
 }
 
 void Flock::WorldTrimming(ASteeringAgent* Agent)
@@ -136,6 +145,11 @@ void Flock::WorldTrimming(ASteeringAgent* Agent)
 void Flock::RenderDebug()
 {
 	//render to highlight evage agent
+	if (isUsingSpacialPartitions)
+	{
+		pCellSpace->RenderCells();
+	}
+	
 	
 	FVector2D posCirlce = FVector2D{m_pAgentToEvade->GetPosition().X + (m_pAgentToEvade->GetActorForwardVector().X * 100.f), m_pAgentToEvade->GetPosition().Y + (m_pAgentToEvade->GetActorForwardVector().Y * 100.f)};
 	DrawDebugCircle(pWorld, FVector{posCirlce.X, posCirlce.Y, 5}, 100.f , 32, FColor::Red, false, -1, 0, 0, FVector(0,1,0), FVector(1,0,0), true);
@@ -227,31 +241,44 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 
 void Flock::RenderNeighborhood()
 {
-	if (isUsingSpacialPartitions)
-		pCellSpace->RenderCells();
+	//all debug drawing is already done in the steeringbehaviours and such
 }
 
 
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent) //pAgent is the main rn
 {
-	currentAmountInsidePool = 0; //reset
-	
-	for (auto& Agent : Agents )
+	if (isUsingSpacialPartitions && pCellSpace)
 	{
-		if (Agent != pAgent) //not including itself
+		pCellSpace->RegisterNeighbors(*pAgent, NeighborhoodRadius);
+		currentAmountInsidePool = pCellSpace->GetNrOfNeighbors();
+        
+		const auto& spatialNeighbors = pCellSpace->GetNeighbors();
+		for(int i = 0; i < currentAmountInsidePool; ++i)
 		{
-			Agent->SetInUse(false); //TODO:: check these again with the theory!!
-			
-			FVector2D length = Agent->GetPosition() - pAgent->GetPosition();
-			if (length.Length() < NeighborhoodRadius)
+			m_pNeighbors[i] = spatialNeighbors[i];
+		}
+	}
+	else
+	{
+		currentAmountInsidePool = 0; //reset
+		for (auto& Agent : Agents )
+		{
+			if (Agent != pAgent) //not including itself
 			{
-				m_pNeighbors[currentAmountInsidePool] = Agent; //puts it in the first empty space
-				++currentAmountInsidePool;
+				Agent->SetInUse(false); //TODO:: check these again with the theory!!
 				
-				Agent->SetInUse(true); //TODO:: check these again with memory pool 
+				FVector2D length = Agent->GetPosition() - pAgent->GetPosition();
+				if (length.Length() < NeighborhoodRadius)
+				{
+					m_pNeighbors[currentAmountInsidePool] = Agent; //puts it in the first empty space
+					++currentAmountInsidePool;
+					
+					Agent->SetInUse(true); //TODO:: check these again with memory pool 
+				}
 			}
 		}
 	}
+	
 }
 
 
@@ -286,8 +313,6 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
- // TODO: Implement
-	
 	 m_pSeekBehavior->SetTarget(Target);
 }
 
@@ -298,17 +323,17 @@ int Flock::GetNrOfNeighbors() const
 		return NrOfNeighbors;
 	else 
 	{
-		return pPartitionedSpace->GetNrOfNeighbors();
+		return pCellSpace->GetNrOfNeighbors();
 	}
 }
 
-const TArray<ASteeringAgent*>& Flock::GetNeighbors() const
+std::vector<ASteeringAgent*> Flock::GetNeighbors() const
 {
 	if (!isUsingSpacialPartitions)
-		return Neighbors;
+		return m_pNeighbors;
 	else
 	{
-		return pPartitionedSpace->GetNeighbors();
+		return pCellSpace->GetNeighbors();
 	}
 }
 
