@@ -1,5 +1,4 @@
 #include "SteeringBehaviors.h"
-
 #include "CircleTypes.h"
 #include "CollisionDebugDrawingPublic.h"
 #include "BaseGizmos/GizmoMath.h"

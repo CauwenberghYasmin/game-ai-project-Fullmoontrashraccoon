@@ -4,7 +4,7 @@
 
 namespace GameAI
 {
-	class IGraphNodeFactory
+	class IGraphNodeFactory //to constrct specual nodes -> can make your own derived versions!
 	{
 	public:
 		IGraphNodeFactory() = default;

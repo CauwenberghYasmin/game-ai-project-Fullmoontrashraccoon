@@ -17,39 +17,39 @@ class UInputMappingContext;
 UCLASS()
 class GAMEAIPROG_API AGameAISpectator : public ASpectatorPawn
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    // Sets default values for this pawn's properties
-    AGameAISpectator();
+	// Sets default values for this pawn's properties
+	AGameAISpectator();
 
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator")	
-    AGameAISpectatorController* GameAIController{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator")	
+	AGameAISpectatorController* GameAIController{};
 	
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator|Input")	
-    TArray<UInputMappingContext*> DefaultInputMappingContexts{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator|Input")	
+	TArray<UInputMappingContext*> DefaultInputMappingContexts{};
 	
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator|Input")	
-    TArray<UInputMappingContext*> MovementInputMappingContexts{}; // Only bound when bIsLockedSpectatorMode == false
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator|Input")	
+	TArray<UInputMappingContext*> MovementInputMappingContexts{}; // Only bound when bIsLockedSpectatorMode == false
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator|Input")
-    float MaxTraceDistance{20000.0f};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator|Input")
+	float MaxTraceDistance{20000.0f};
 
-    // Components
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator")
-    UCameraComponent* Camera{};
+	// Components
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GameAISpectator")
+	UCameraComponent* Camera{};
 	
-    // Called when the game starts or when spawned
-    virtual void BeginPlay() override;
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
-    virtual void PossessedBy(AController* NewController) override;
+	virtual void PossessedBy(AController* NewController) override;
 
-    virtual void UnPossessed() override;
+	virtual void UnPossessed() override;
 	
 public:
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
-    void SetCameraProjection(ECameraProjectionMode::Type ProjectionMode);
+	void SetCameraProjection(ECameraProjectionMode::Type ProjectionMode);
 };
