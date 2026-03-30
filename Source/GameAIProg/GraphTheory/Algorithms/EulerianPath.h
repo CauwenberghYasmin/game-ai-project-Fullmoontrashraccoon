@@ -1,6 +1,10 @@
 #pragma once
 #include <stack>
 #include "Shared/Graph/Graph.h"
+#include <utility>
+
+#include "HLSLTypeAliases.h"
+
 
 namespace GameAI
 {
@@ -22,6 +26,7 @@ namespace GameAI
 	private:
 		void VisitAllNodesDFS(const std::vector<Node*>& pNodes, std::vector<bool>& visited, int startIndex) const;
 		bool IsConnected() const;
+		void FirstDepthSearch( Node*& node, std::vector<Node*>& stack, size_t& amountVisited) const;
 
 		Graph* m_pGraph;
 	};
@@ -55,8 +60,23 @@ namespace GameAI
 		std::vector<Node*> Nodes = graphCopy.GetActiveNodes();
 		int currentNodeId{ Graphs::InvalidNodeId };
 		
+		
 		// TODO Check if there can be an Euler path
 		// TODO If this graph is not eulerian, return the empty path
+		if (!IsConnected() || eulerianity == Eulerianity::notEulerian)
+		{
+			return Path; //is empty
+		}
+		else if ( eulerianity == Eulerianity::eulerian )
+		{
+			//pick any starting node
+			//set id
+		}
+		else if ( eulerianity == Eulerianity::semiEulerian )
+		{
+			//find uneven for starting node
+		}
+		
 		
 		// TODO Start algorithm loop
 		std::stack<int> nodeStack;
@@ -67,11 +87,10 @@ namespace GameAI
 
 	inline void EulerianPath::VisitAllNodesDFS(const std::vector<Node*>& Nodes, std::vector<bool>& visited, int startIndex ) const
 	{
-		// TODO Mark the visited node
-
-		// TODO Ask the graph for the connections from that node
-		// TODO recursively visit any valid connected nodes that were not visited before
-		// TODO Tip: use an index-based for-loop to find the correct index
+		//TO THE TEACHER:
+		//I started making the exercise before checking the next slide, (due to my carelessness)
+		//so you can find a working version below with other functions + the sources I used to create the algorithm.
+		//I added an isVisited variable the the node class to make it work
 	}
 
 	inline bool EulerianPath::IsConnected() const
@@ -79,11 +98,50 @@ namespace GameAI
 		std::vector<Node*> Nodes = m_pGraph->GetActiveNodes();
 		if (Nodes.size() == 0)
 			return false;
-
-		// TODO choose a starting node
 		
-		// TODO start a depth-first-search traversal from the node that has at least one connection
+		size_t amountVisited{ 0 }; //checks to see if all nodes are visited
+		const size_t NeededVisits{ Nodes.size() }; //checks to see if all nodes are visited
 		
-		// TODO if a node was never visited, this graph is not connected
+		std::vector<Node*> stack{}; // using example https://www.codecademy.com/article/depth-first-search-dfs-algorithm
+		Node* startNode = Nodes[0]; //pick first in list for simplicity
+		stack.push_back(startNode);
+		
+		while (!stack.empty())
+		{
+			FirstDepthSearch(stack.back(), stack, amountVisited);
+		}
+		
+		for ( auto& node : Nodes)
+		{
+			node->isVisited = false;
+		}
+		
+		if (amountVisited == NeededVisits)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	inline void EulerianPath::FirstDepthSearch( Node*& node, std::vector<Node*>& stack, size_t& amountVisited) const
+	{
+		stack.pop_back(); //removes passed node
+		node->isVisited = true;
+		++amountVisited;
+		
+		auto ConnectedNodes {m_pGraph->FindConnectionsFrom(node->GetId())};
+		for (const auto& ConnectedNode : ConnectedNodes)
+		{
+			int desinationNodeID = ConnectedNode->GetToId();
+			auto foundNode = (m_pGraph->GetNode(desinationNodeID)).get();
+			
+			if (foundNode->isVisited == false)
+			{
+				stack.push_back(foundNode);
+			}
+		}
 	}
 }

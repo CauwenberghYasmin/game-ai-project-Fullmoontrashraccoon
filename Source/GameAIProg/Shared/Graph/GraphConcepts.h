@@ -18,7 +18,7 @@ namespace GameAI
 		requires is_node_type<NodeType>;
 		requires std::constructible_from<NodeType, FVector2D>;
 		{Node.GetPosition()} -> std::same_as<FVector2D const &>;
-		{Node.SetPosition(std::declval<FVector2D const &>());
+		{Node.SetPosition(std::declval<FVector2D const &>())};
 	};
 
 	template <typename ConnectionType>

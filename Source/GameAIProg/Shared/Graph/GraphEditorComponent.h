@@ -19,10 +19,14 @@ class GAMEAIPROG_API UGraphEditorComponent : public UActorComponent
 public:
 	// Input Mappings Context 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputMappingContext* DefaultGraphEditingIMC;
+	UInputMappingContext* DefaultGraphEditingIMC; //this one is default and always active
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputMappingContext* NodeHoverGraphEditingIMC;
+	UInputMappingContext* NodeHoverGraphEditingIMC; //add exttras to this one:
+	//destroying
+	//moving nodes
+	//creating connections!
+	
 	
 	// Input Actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
