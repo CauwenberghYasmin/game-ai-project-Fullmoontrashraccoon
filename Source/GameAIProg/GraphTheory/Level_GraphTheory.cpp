@@ -42,11 +42,18 @@ void ALevel_GraphTheory::BeginPlay()
 	}
 	
 	// TODO Make the graph and a couple connected nodes here...
+	int nodeA = Graph.AddNode(std::make_unique<Node>(FVector2D{ 0.f, 0.f }));
+	int nodeB = Graph.AddNode(std::make_unique<Node>(FVector2D{ 400.f, 0.f }));
+	int nodeC = Graph.AddNode(std::make_unique<Node>(FVector2D{ 400.f, 400.f }));
+	
+	Graph.AddConnection(nodeA, nodeB);
+	Graph.AddConnection(nodeB, nodeC);
 	
 	// Spawn the Agent
 	Agent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
 	FVector{0,0,90}, FRotator::ZeroRotator);
 	Agent->SetSteeringBehavior(&PathFollow);
+	Renderer = GameAI::GraphRenderer(GetWorld());
 }
 
 void ALevel_GraphTheory::BeginDestroy()
@@ -102,6 +109,15 @@ void ALevel_GraphTheory::Tick(float DeltaTime)
 	// TODO Check if the graph has updated
 	// TODO if so, run the EulerianPath algorithm
 	// TODO if a path is found, have the agent follow it
+	
+	// EulerianPath Path(&Graph);			//FIX THIS
+	// Eulerianity state = Path.IsEulerian();
+	// std::vector<Node*> trail = Path.FindPath(state);
+	//
+	// if (!trail.empty())
+	// {
+	// 	UpdateAgentPath(trail);
+	// }
 }
 
 void ALevel_GraphTheory::UpdateAgentPath(std::vector<Node*> const& Trail)
@@ -109,6 +125,14 @@ void ALevel_GraphTheory::UpdateAgentPath(std::vector<Node*> const& Trail)
 	std::vector<FVector2D> path{};
 	
 	// TODO convert Node vector to positions vector
+	for (const Node* node : Trail)
+	{
+		if (node)
+		{
+			path.push_back(node->GetPosition());
+		}
+	}
+	
 
 	PathFollow.SetPath(path);
 	if (path.size() > 0)
