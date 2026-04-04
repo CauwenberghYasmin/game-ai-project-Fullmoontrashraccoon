@@ -26,8 +26,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	UPROPERTY()
-	APlayerController* PlayerController{nullptr};
 	
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
@@ -39,6 +37,9 @@ private:
 	GameAI::Graph Graph{false};
 	GameAI::GraphRenderer Renderer{nullptr};
 	GameAI::GraphNodeFactory<GameAI::Node> NodeFactory{};
+
+	std::vector<GameAI::Node*> amountNodes;
+	int graphConnections;
 	
 	UPROPERTY()
 	UGraphEditorComponent* PlayerGraphEditor{}; // ref

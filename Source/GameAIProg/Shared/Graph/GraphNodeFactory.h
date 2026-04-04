@@ -4,7 +4,7 @@
 
 namespace GameAI
 {
-	class IGraphNodeFactory //to constrct specual nodes -> can make your own derived versions!
+	class IGraphNodeFactory
 	{
 	public:
 		IGraphNodeFactory() = default;
@@ -30,6 +30,22 @@ namespace GameAI
 		{
 			// You would need to make your own implementation of this
 			return std::unique_ptr<Node>(new NodeType(Other));
+		}
+	};
+	
+	class TerrainNodeFactory : public IGraphNodeFactory
+	{
+	public:
+		
+		virtual ~TerrainNodeFactory() override = default;
+		virtual std::unique_ptr<Node> const CreateNode(const FVector2D& Position) const override
+		{
+			return std::unique_ptr<Node>(new TerrainNode(Position));
+		}
+		virtual std::unique_ptr<Node> const CloneNode(const Node& Other) const override
+		{
+			TerrainNode const * AsTerrainNode = dynamic_cast<TerrainNode const *>(&Other);
+			return std::unique_ptr<Node>(new TerrainNode(*AsTerrainNode));
 		}
 	};
 	
