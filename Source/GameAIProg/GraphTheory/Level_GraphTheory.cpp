@@ -130,8 +130,9 @@ void ALevel_GraphTheory::Tick(float DeltaTime)
 		
 		amountNodes =NewAmountNodes;
 		graphConnections = newGraphConnections;
-		
 	}
+	
+	
 }
 
 void ALevel_GraphTheory::UpdateAgentPath(std::vector<Node*> const& Trail)
