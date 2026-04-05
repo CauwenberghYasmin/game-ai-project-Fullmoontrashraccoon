@@ -8,7 +8,7 @@ AStar::AStar(Graph* const pGraph, HeuristicFunctions::Heuristic hFunction)
 {
 }
 
-std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
+std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode) //should we not change this function??
 {
 	std::vector<Node*> path{};
 	return path;
